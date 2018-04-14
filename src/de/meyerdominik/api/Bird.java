@@ -19,7 +19,7 @@ public class Bird extends Rectangle{
 	public Bird(int x, int y, int width, int height) {
 		super(x, y, width, height);
 		// IN 1) y pos. of bird 2) x of pipe 3) y of upper pipe 4) y of lower pipe 
-		brain = new Network(4,3,3,1);
+		brain = new Network(4,1);
 	}
 	
 	public Bird(int x, int y, int width, int height, Network nn) {

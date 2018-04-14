@@ -200,10 +200,11 @@ public class Network {
             for(int neuron = 0; neuron < NETWORK_LAYER_SIZES[layer]; neuron++) {
             	for(int prevNeuron = 0; prevNeuron < NETWORK_LAYER_SIZES[layer-1]; prevNeuron ++) {
                     double w = weights[layer][neuron][prevNeuron];
-                    Random r = new Random();
-                    double percent = r.nextDouble() + r.nextDouble();
-                    weights[layer][neuron][prevNeuron] = w * (percent * (1+rate));
-                }
+                    double percent = NetworkTools.randomValue(0d, 2d);
+                    double ProRate = percent * (1+rate); 
+                    weights[layer][neuron][prevNeuron] = w * ProRate;
+                    System.out.println("w:" + weights[layer][neuron][prevNeuron] + "; percent:" + percent + "; ProRate: " + ProRate + "=" + weights[layer][neuron][prevNeuron]);
+            	}
             }
         }
     }

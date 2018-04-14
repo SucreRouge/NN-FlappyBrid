@@ -20,21 +20,22 @@ public class FlappyBird implements ActionListener, KeyListener{
 	
 	// Hauptframe
 	public final int WIDTH 	= 1200;
-	public final int HEIGHT 	= 800;
-	protected final int AMOUNT_POPULATION = 400;
+	public final int HEIGHT = 800;
+	protected final int AMOUNT_POPULATION = 150;
 	public final double MUTATE_RATE = 0.05; // BETWEEN 0 and 1
 	
 	protected int ticks = 0;
 	protected int speed = 10;
+	protected int genCounter = 1;
 	
-	protected JFrame jmf;
-	//protected Bird bird;
+	public JFrame jmf;
 	public ArrayList<Bird> savedbirds;
 	public ArrayList<Bird> birds;
 	protected ArrayList<Pipe> pipes;
 	protected Renderer renderer;
 	protected Random rand;
-	protected Timer timer;
+	public Timer timer;
+	
 
 	
 	public FlappyBird() {
@@ -53,7 +54,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 		
 		jmf.setTitle("FlappyBird");
 		// Exit on Close
-		jmf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jmf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		jmf.setSize(WIDTH, HEIGHT);
 		jmf.setResizable(false);
 		jmf.add(renderer);
@@ -178,20 +179,15 @@ public class FlappyBird implements ActionListener, KeyListener{
 				bird.yMotion += 2;
 			}
 			
+			bird.y += bird.yMotion;
 			
 			if(!bird.gameOver) {
 				bird.score++;
 			}
 			
-			bird.y += bird.yMotion;
-			
 			// GameOver?
 			for (Pipe pipe : pipes)
 			{
-				if (pipe.y == 0 && bird.x + bird.width / 2 > pipe.x + pipe.width / 2 - 10 && bird.x + bird.width / 2 < pipe.x + pipe.width / 2 + 10)
-				{
-					bird.score++;
-				}
 	
 				if (pipe.intersects(bird))
 				{
@@ -272,6 +268,12 @@ public class FlappyBird implements ActionListener, KeyListener{
 				best = bird;
 			}
 		}
+		try {
+			best.brain.saveNetwork("best" + genCounter + ".txt");
+			genCounter +=1;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 //		System.out.println("BEST: " + best.score + ", f:" + best.fitness);
 		return best;
 	}
@@ -288,7 +290,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 		
 		for(Bird bird : savedbirds) {
 			bird.fitness = bird.score / sum;
-			System.out.println("s: " + bird.score + " / " + sum);
+//			System.out.println("s: " + bird.score + " / " + sum);
 		}
 		
 	}
