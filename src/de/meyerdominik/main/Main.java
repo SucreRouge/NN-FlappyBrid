@@ -6,7 +6,7 @@ public class Main {
 
 	public static FlappyBird game;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		game = new FlappyBird();
 	}
 

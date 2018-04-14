@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -19,15 +20,17 @@ import de.meyerdominik.api.Renderer;
 public class FlappyBird implements ActionListener, KeyListener{
 	
 	// Hauptframe
-	protected final int WIDTH 	= 1200;
-	protected final int HEIGHT 	= 800;
+	public final int WIDTH 	= 1200;
+	public final int HEIGHT 	= 800;
+	protected final int AMOUNT_POPULATION = 1;
 	
 	protected int ticks = 0;
 	protected int speed = 10;
-	protected boolean gameOver = false;
 	
 	protected JFrame jmf;
-	protected Bird bird;
+	//protected Bird bird;
+	public ArrayList<Bird> savedbirds;
+	public ArrayList<Bird> birds;
 	protected ArrayList<Pipe> pipes;
 	protected Renderer renderer;
 	protected Random rand;
@@ -41,6 +44,8 @@ public class FlappyBird implements ActionListener, KeyListener{
 	private void start() {
 		jmf 		= new JFrame();
 		pipes 		= new ArrayList<>(); 
+		savedbirds	= new ArrayList<>();
+		birds		= new ArrayList<>();
 		renderer 	= new Renderer();
 		rand		= new Random();
 		timer 		= new Timer(20, this);
@@ -54,7 +59,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 		jmf.addKeyListener(this);
 		jmf.setVisible(true);
 		
-		bird 		= new Bird(WIDTH / 2 - 10, HEIGHT / 2 - 10, 20, 20);
+		createFirstPopulatoion();
 		
 		addPipe(true);
 		addPipe(true);
@@ -64,6 +69,13 @@ public class FlappyBird implements ActionListener, KeyListener{
 		timer.start();
 	}
 	
+	private void createFirstPopulatoion() {
+		for(int i = 0; i < AMOUNT_POPULATION; i++) {
+			birds.add(new Bird(WIDTH / 2 - 10, HEIGHT / 2 - 10, 20, 20));
+		}
+		
+	}
+
 	public void repaint(Graphics g) {
 		g.setColor(Color.cyan);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
@@ -80,7 +92,9 @@ public class FlappyBird implements ActionListener, KeyListener{
 		}
 		
 		g.setColor(Color.red);
-		g.fillRect(bird.x, bird.y, bird.width, bird.height);
+		for(Bird bird : birds) {
+			g.fillRect(bird.x, bird.y, bird.width, bird.height);
+		}
 
 	}
 
@@ -113,17 +127,16 @@ public class FlappyBird implements ActionListener, KeyListener{
 		
 		ticks++;
 		
+		// Neuer Satz?
+		if(allGameOver()) {
+			reset();
+		}
+		
 		for (int i = 0; i < pipes.size(); i++)
 		{
 			Pipe pipe = pipes.get(i);
 
 			pipe.x -= speed;
-		}
-		
-		// YMotion FlappyBird
-		if (ticks % 2 == 0 && bird.yMotion < 15)
-		{
-			bird.yMotion += 2;
 		}
 		
 		// Neue Pipes
@@ -142,64 +155,133 @@ public class FlappyBird implements ActionListener, KeyListener{
 			}
 		}
 		
-		bird.y += bird.yMotion;
-		
-		// GameOver?
-		for (Pipe pipe : pipes)
-		{
-			if (pipe.y == 0 && bird.x + bird.width / 2 > pipe.x + pipe.width / 2 - 10 && bird.x + bird.width / 2 < pipe.x + pipe.width / 2 + 10)
+		for(Bird bird : birds) {
+			// Y-Motion FlappyBird
+			if (ticks % 2 == 0 && bird.yMotion < 15)
 			{
-				bird.score++;
+				bird.yMotion += 2;
 			}
-
-			if (pipe.intersects(bird))
+			
+	
+			
+			bird.y += bird.yMotion;
+			
+			// GameOver?
+			for (Pipe pipe : pipes)
 			{
-				gameOver = true;
-
-				if (bird.x <= pipe.x)
+				if (pipe.y == 0 && bird.x + bird.width / 2 > pipe.x + pipe.width / 2 - 10 && bird.x + bird.width / 2 < pipe.x + pipe.width / 2 + 10)
 				{
-					bird.x = pipe.x - bird.width;
-
+					bird.score++;
 				}
-				else
+	
+				if (pipe.intersects(bird))
 				{
-					if (pipe.y != 0)
+					bird.gameOver = true;
+	
+					if (bird.x <= pipe.x)
 					{
-						bird.y = pipe.y - bird.height;
+						bird.x = pipe.x - bird.width;
+	
 					}
-					else if (bird.y < pipe.height)
+					else
 					{
-						bird.y = pipe.height;
+						if (pipe.y != 0)
+						{
+							bird.y = pipe.y - bird.height;
+						}
+						else if (bird.y < pipe.height)
+						{
+							bird.y = pipe.height;
+						}
 					}
 				}
 			}
-		}
-		
-		if (bird.y > HEIGHT - 120 || bird.y < 0)
-		{
-			gameOver = true;
-		}
-
-		if (bird.y + bird.yMotion >= HEIGHT - 120)
-		{
-			bird.y = HEIGHT - 120 - bird.height;
-			gameOver = true;
-		}
+			
+			if (bird.y > HEIGHT - 120 || bird.y < 0)
+			{
+				bird.gameOver = true;
+			}
+	
+			if (bird.y + bird.yMotion >= HEIGHT - 120)
+			{
+				bird.y = HEIGHT - 120 - bird.height;
+				bird.gameOver = true;
+			}
+			
+			bird.think(pipes);
+	}
 		
 		renderer.repaint();
 	}
 	
-	public void jump()
-	{
 
-		if (!gameOver){
-			if (bird.yMotion > 0)
-			{
-				bird.yMotion = 0;
-			}
-
-			bird.yMotion -= 10;
+	private void reset() {
+		pipes.clear();
+		
+		addPipe(true);
+		addPipe(true);
+		addPipe(true);
+		addPipe(true);
+		
+		for(Bird bird : birds) {
+			savedbirds.add(bird);
 		}
+		birds.clear();
+		
+		try {
+			newPopulation();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void newPopulation() throws Exception {
+		calculateFitness();
+		Bird best = pickBest();
+		best.brain.updateWeights(11.9);
+		best.gameOver = false;
+		for(int i = 0; i < AMOUNT_POPULATION; i++) {
+			birds.add(best);
+		}
+		
+		
+	}
+
+	private Bird pickBest() {
+		Bird best = getRandomSavedBird();
+		for(Bird bird : savedbirds) {
+			if(bird.fitness >= best.fitness) {
+				best = bird;
+			}
+		}
+		return best;
+	}
+
+	private Bird getRandomSavedBird() {
+		return savedbirds.get(rand.nextInt(savedbirds.size()));
+	}
+
+	private void calculateFitness() {
+		int sum = 1;
+		for(Bird bird : savedbirds) {
+			sum +=bird.score;
+		}
+		
+		for(Bird bird : savedbirds) {
+			bird.fitness = bird.score / sum;
+		}
+		
+	}
+
+	private boolean allGameOver() {
+		boolean re = true;
+		for(Bird bird : birds) {
+			if(!bird.gameOver) {
+				re = false;
+			}
+		}
+		return re;
 	}
 
 	@Override
@@ -212,10 +294,11 @@ public class FlappyBird implements ActionListener, KeyListener{
 	public void keyReleased(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_SPACE)
 		{
-			jump();
+			for(Bird bird : birds) {
+				bird.jump();
+			}
 		}
 		
 	}
-	
 	
 }
