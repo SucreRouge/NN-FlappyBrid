@@ -22,7 +22,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 	protected final int WIDTH 	= 1200;
 	protected final int HEIGHT 	= 800;
 	
-	protected int ticks;
+	protected int ticks = 0;
 	protected int speed = 10;
 	protected boolean gameOver = false;
 	
@@ -110,6 +110,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 	// JEDER TICK
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		
 		ticks++;
 		
 		for (int i = 0; i < pipes.size(); i++)
