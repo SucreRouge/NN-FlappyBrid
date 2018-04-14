@@ -9,8 +9,8 @@ import de.meyerdominik.main.Main;
 public class Bird extends Rectangle{
 
 	public int score = 0;
-	public int fitness = 0;
 	public int yMotion = 0;
+	public int fitness = 0;
 	public boolean gameOver = false;
 	public Network brain;
 	
@@ -19,7 +19,14 @@ public class Bird extends Rectangle{
 	public Bird(int x, int y, int width, int height) {
 		super(x, y, width, height);
 		// IN 1) y pos. of bird 2) x of pipe 3) y of upper pipe 4) y of lower pipe 
-		brain = new Network(4,9,9,9,1);
+		brain = new Network(4,3,3,1);
+	}
+	
+	public Bird(int x, int y, int width, int height, Network nn) {
+		super(x, y, width, height);
+		// IN 1) y pos. of bird 2) x of pipe 3) y of upper pipe 4) y of lower pipe 
+		brain = nn;
+		nn.mutate(Main.game.MUTATE_RATE);
 	}
 	
 	public void jump()
@@ -69,14 +76,17 @@ public class Bird extends Rectangle{
 		
 		// get Inputs
 		double[] input = new  double[4];
-		input[0] = this.y / Main.game.HEIGHT;
-		input[1] = upper.y / Main.game.HEIGHT;
-		input[2] = lower.y / Main.game.HEIGHT;
-		input[3] = closest.x / Main.game.WIDTH;
+		input[0] = (double) this.y / (double) Main.game.HEIGHT;
+		input[1] = (double) upper.y / (double) Main.game.HEIGHT;
+		input[2] = (double) lower.y / (double) Main.game.HEIGHT;
+		input[3] = (double) closest.x / (double) Main.game.HEIGHT;
+		
+//		System.out.println(Arrays.toString(input));
 		
 		double output[] = brain.calculate(input);
+//		System.out.println("OUT: " + Arrays.toString(output));
 		if(output[0] > 0.5) {
-			this.jump();
+			jump();
 		}
 		
 	}

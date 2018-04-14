@@ -194,4 +194,17 @@ public class Network {
             }
         }
     }
+    
+    public void mutate(double rate) {
+        for(int layer = 1; layer < NETWORK_SIZE; layer++) {
+            for(int neuron = 0; neuron < NETWORK_LAYER_SIZES[layer]; neuron++) {
+            	for(int prevNeuron = 0; prevNeuron < NETWORK_LAYER_SIZES[layer-1]; prevNeuron ++) {
+                    double w = weights[layer][neuron][prevNeuron];
+                    Random r = new Random();
+                    double percent = r.nextDouble() + r.nextDouble();
+                    weights[layer][neuron][prevNeuron] = w * (percent * (1+rate));
+                }
+            }
+        }
+    }
 }

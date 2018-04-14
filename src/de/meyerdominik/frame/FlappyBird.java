@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -22,7 +21,8 @@ public class FlappyBird implements ActionListener, KeyListener{
 	// Hauptframe
 	public final int WIDTH 	= 1200;
 	public final int HEIGHT 	= 800;
-	protected final int AMOUNT_POPULATION = 1;
+	protected final int AMOUNT_POPULATION = 400;
+	public final double MUTATE_RATE = 0.05; // BETWEEN 0 and 1
 	
 	protected int ticks = 0;
 	protected int speed = 10;
@@ -38,10 +38,11 @@ public class FlappyBird implements ActionListener, KeyListener{
 
 	
 	public FlappyBird() {
-		start();
+		start(true);
 	}
+	
 
-	private void start() {
+	private void start(boolean first) {
 		jmf 		= new JFrame();
 		pipes 		= new ArrayList<>(); 
 		savedbirds	= new ArrayList<>();
@@ -59,7 +60,9 @@ public class FlappyBird implements ActionListener, KeyListener{
 		jmf.addKeyListener(this);
 		jmf.setVisible(true);
 		
-		createFirstPopulatoion();
+		if(first) {
+			createFirstPopulatoion();
+		}
 		
 		addPipe(true);
 		addPipe(true);
@@ -126,10 +129,23 @@ public class FlappyBird implements ActionListener, KeyListener{
 	public void actionPerformed(ActionEvent e) {
 		
 		ticks++;
-		
 		// Neuer Satz?
 		if(allGameOver()) {
 			reset();
+			/*timer.stop();
+			
+			for(Bird bird : birds) {
+				savedbirds.add(bird);
+			}
+			birds.clear();
+			
+			calculateFitness();
+			Bird best = pickBest();
+			best.brain.updateWeights(6d);
+			best.brain.printWeights();
+			best.gameOver = false;
+			jmf.dispose();
+			Main.game = new FlappyBird(best);*/
 		}
 		
 		for (int i = 0; i < pipes.size(); i++)
@@ -162,7 +178,10 @@ public class FlappyBird implements ActionListener, KeyListener{
 				bird.yMotion += 2;
 			}
 			
-	
+			
+			if(!bird.gameOver) {
+				bird.score++;
+			}
 			
 			bird.y += bird.yMotion;
 			
@@ -216,7 +235,9 @@ public class FlappyBird implements ActionListener, KeyListener{
 	
 
 	private void reset() {
+		ticks = 0;
 		pipes.clear();
+		savedbirds.clear();
 		
 		addPipe(true);
 		addPipe(true);
@@ -228,21 +249,17 @@ public class FlappyBird implements ActionListener, KeyListener{
 		}
 		birds.clear();
 		
-		try {
-			newPopulation();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		newPopulation();
+
 		
 	}
 
-	private void newPopulation() throws Exception {
+	private void newPopulation() {
 		calculateFitness();
 		Bird best = pickBest();
-		best.brain.updateWeights(11.9);
 		best.gameOver = false;
 		for(int i = 0; i < AMOUNT_POPULATION; i++) {
-			birds.add(best);
+			birds.add(new Bird(WIDTH / 2 - 10, HEIGHT / 2 - 10, 20, 20, best.brain));
 		}
 		
 		
@@ -255,6 +272,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 				best = bird;
 			}
 		}
+//		System.out.println("BEST: " + best.score + ", f:" + best.fitness);
 		return best;
 	}
 
@@ -270,6 +288,7 @@ public class FlappyBird implements ActionListener, KeyListener{
 		
 		for(Bird bird : savedbirds) {
 			bird.fitness = bird.score / sum;
+			System.out.println("s: " + bird.score + " / " + sum);
 		}
 		
 	}

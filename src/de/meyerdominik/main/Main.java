@@ -1,5 +1,6 @@
 package de.meyerdominik.main;
 
+
 import de.meyerdominik.frame.FlappyBird;
 
 public class Main {
